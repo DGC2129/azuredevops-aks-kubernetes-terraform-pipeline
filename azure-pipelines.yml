@@ -1,0 +1,61 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  name: Default
+  vmImage: ubuntu-latest
+
+# steps:
+# - script: echo Hello, world!
+#   displayName: 'Run a one-line script'
+
+# - script: |
+#     echo Add other tasks to build, test, and deploy your project.
+#     echo See https://aka.ms/yaml
+#   displayName: 'Run a multi-line script'
+
+stages:
+- stage: 
+  jobs:
+    - job: TerraformValidateJob
+      continueOnError: false
+      steps:
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Artifacts
+        inputs:
+          targetPath: '$(System.DefaultWorkingDirectory)/Git-Repo-Files/terraform-manifests'
+          artifact: 'terraform-manifests'
+          publishLocation: 'pipeline'
+      - task: TerraformInstaller@2
+        displayName: Terraform Install
+        inputs:
+          terraformVersion: 'latest'
+      - task: TerraformCLI@1
+        displayName: Terraform init
+        inputs:
+          command: 'init'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/Git-Repo-Files/terraform-manifests'
+          backendType: 'azurerm'
+          backendServiceArm: 'terraform-aks-azurerm-service-connection'
+          backendAzureRmTenantId: '6198bbd5-e8ca-4d38-9dfc-d1c8c134e2bb'
+          backendAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+          ensureBackend: true
+          backendAzureRmResourceGroupName: 'terraform-storage-rg'
+          backendAzureRmResourceGroupLocation: 'CentralUS'
+          backendAzureRmStorageAccountName: 'terraformstatestorexal'
+          backendAzureRmContainerName: 'terraformstate'
+          backendAzureRmKey: 'aks-basic-demo.tfstate'
+          allowTelemetryCollection: false
+      - task: TerraformCLI@2
+        displayName: Terraform Validate
+        inputs:
+          command: 'validate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/Git-Repo-Files/terraform-manifests'
+          allowTelemetryCollection: false
+          
+
