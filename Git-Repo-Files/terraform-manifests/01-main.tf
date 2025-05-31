@@ -26,20 +26,20 @@ terraform {
     }
   }
 
-# Terraform State Storage to Azure Storage Container
+  # Terraform State Storage to Azure Storage Container
   backend "azurerm" {
     #resource_group_name   = "terraform-storage-rg"
     #storage_account_name  = "terraformstatexlrwdrzs"
     #container_name        = "tfstatefiles"
     #key                   = "terraform-custom-vnet.tfstate"
-  }  
+  }
 }
 
 
 
 # 2. Terraform Provider Block for AzureRM
 provider "azurerm" {
-  subscription_id = "XXXXXXX"
+  subscription_id = "d5211d81-50be-46f7-a84f-a884add791ea"
   features {
     # Updated as part of June2023 to delete "ContainerInsights Resources" when deleting the Resource Group
     resource_group {
@@ -49,7 +49,7 @@ provider "azurerm" {
 }
 
 # 3. Terraform Resource Block: Define a Random Pet Resource
-resource "random_pet" "aksrandom" {
+# resource "random_pet" "aksrandom" {
 
-}
+# }
 
