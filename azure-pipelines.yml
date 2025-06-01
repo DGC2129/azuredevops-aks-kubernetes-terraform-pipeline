@@ -99,6 +99,7 @@ stages:
                 backendAzureRmContainerName: 'terraformstate'
                 backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
                 allowTelemetryCollection: false
+                commandOptions: '-migrate-state'
             - task: TerraformCLI@2
               displayName: Terraform plan
               inputs:
