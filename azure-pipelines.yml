@@ -9,6 +9,12 @@ trigger:
 pool:
   name: Default
   vmImage: ubuntu-latest
+  
+variables:
+- name: DEV_ENVIRONMENT
+  value: dev
+- name: QA_ENVIRONMENT
+  value: qa 
 
 # steps:
 # - script: echo Hello, world!
@@ -57,5 +63,59 @@ stages:
           command: 'validate'
           workingDirectory: '$(System.DefaultWorkingDirectory)/Git-Repo-Files/terraform-manifests'
           allowTelemetryCollection: false
-          
+
+- stage: DeployAKSClusters
+  jobs:
+    - deployment: DeployDevAKSCluster
+      displayName: Deploy dev aks cluster
+      pool: 
+        name: Default
+        vmImage: 'ubuntu-latest'
+      environment: $(DEV_ENVIRONMENT)
+      strategy: 
+       runOnce:
+         deploy:
+           steps:
+            - task: DownloadSecureFile@1
+              displayName: Download ssh key
+              name: sshkey
+              inputs:
+                 secureFile: 'id_rsa.pub'
+            - task: TerraformInstaller@2
+              displayName: Terraform Install
+              inputs:
+                terraformVersion: 'latest'
+            - task: TerraformCLI@2
+              displayName: Terraform init
+              inputs:
+                command: 'init'
+                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                backendType: 'azurerm'
+                backendServiceArm: 'terraform-aks-azurerm-service-connection'
+                backendAzureRmTenantId: '6198bbd5-e8ca-4d38-9dfc-d1c8c134e2bb'
+                backendAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+                backendAzureRmResourceGroupName: 'terraform-storage-rg'
+                backendAzureRmStorageAccountName: 'terraformstatestorexal'
+                backendAzureRmContainerName: 'terraformstate'
+                backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
+                allowTelemetryCollection: false
+            - task: TerraformCLI@2
+              displayName: Terraform plan
+              inputs:
+                command: 'plan'
+                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                environmentServiceName: 'terraform-aks-azurerm-service-connection'
+                providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+                commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -out $(Pipeline.Workspace)/terraform-manifests/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                allowTelemetryCollection: false
+            - task: TerraformCLI@2
+              displayName: Terraform apply
+              inputs:
+                command: 'apply'
+                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                environmentServiceName: 'terraform-aks-azurerm-service-connection'
+                providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+                commandOptions: '$(Pipeline.Workspace)/terraform-manifests/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                allowTelemetryCollection: true
+
 
