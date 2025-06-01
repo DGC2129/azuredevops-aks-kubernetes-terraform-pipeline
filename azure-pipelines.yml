@@ -78,6 +78,7 @@ stages:
            steps:
             - task: DownloadSecureFile@1
               displayName: Download ssh key
+              name:
               inputs:
                  secureFile: 'id_rsa.pub'
             - task: TerraformInstaller@2
@@ -98,5 +99,23 @@ stages:
                 backendAzureRmContainerName: 'terraformstate'
                 backendAzureRmKey: 'aks-$(DEV_ENVIRONMENT).tfstate'
                 allowTelemetryCollection: false
+            - task: TerraformCLI@2
+              displayName: Terraform plan
+              inputs:
+                command: 'plan'
+                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                environmentServiceName: 'terraform-aks-azurerm-service-connection'
+                providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+                commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -out $(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                allowTelemetryCollection: false
+            - task: TerraformCLI@2
+              displayName: Terraform apply
+              inputs:
+                command: 'apply'
+                workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
+                environmentServiceName: 'terraform-aks-azurerm-service-connection'
+                providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
+                commandOptions: '$(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                allowTelemetryCollection: true
 
 
