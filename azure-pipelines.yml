@@ -106,7 +106,7 @@ stages:
                 workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
                 environmentServiceName: 'terraform-aks-azurerm-service-connection'
                 providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
-                commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -out $(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -var environment=$(DEV_ENVIRONMENT) -out $(Pipeline.Workspace)/terraform-manifests/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
                 allowTelemetryCollection: false
             - task: TerraformCLI@2
               displayName: Terraform apply
@@ -115,7 +115,7 @@ stages:
                 workingDirectory: '$(Pipeline.Workspace)/terraform-manifests'
                 environmentServiceName: 'terraform-aks-azurerm-service-connection'
                 providerAzureRmSubscriptionId: 'd5211d81-50be-46f7-a84f-a884add791ea'
-                commandOptions: '$(Pipeline.Workspace)/terraform-manifests-out/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
+                commandOptions: '$(Pipeline.Workspace)/terraform-manifests/$(DEV_ENVIRONMENT)-$(Build.BuildId).out'
                 allowTelemetryCollection: true
 
 
