@@ -78,7 +78,7 @@ stages:
            steps:
             - task: DownloadSecureFile@1
               displayName: Download ssh key
-              name:
+              name: sshkey
               inputs:
                  secureFile: 'id_rsa.pub'
             - task: TerraformInstaller@2
